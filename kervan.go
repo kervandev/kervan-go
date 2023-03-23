@@ -3,12 +3,13 @@ package kervan
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
 
-// KervanAPI is the main struct for the Tapsilat API
+// API is the main struct for the Kervan API
 type API struct {
 	EndPoint string `json:"end_point"`
 	Token    string `json:"token"`
@@ -45,15 +46,6 @@ func (t *API) post(path string, payload interface{}, response interface{}) error
 	return t.do(req, response)
 }
 
-func (t *API) get(path string, payload interface{}, response interface{}) error {
-	url := t.EndPoint + path
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-	return t.do(req, response)
-}
-
 func (t *API) do(req *http.Request, response interface{}) error {
 	req.Header.Set("Authorization", "Bearer "+t.Token)
 	client := &http.Client{
@@ -72,4 +64,13 @@ func (t *API) do(req *http.Request, response interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func (t *API) CheckLicence(payload *CheckLicencePayload) (*CheckLicenceResponse, error) {
+	var response CheckLicenceResponse
+	err := t.post("/licence/check", payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error while checking licence: %w", err)
+	}
+	return &response, nil
 }
