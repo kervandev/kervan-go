@@ -31,7 +31,7 @@ func NewCustomAPI(endpoint, token string) *API {
 	}
 }
 
-func (t *API) post(path string, payload interface{}, response interface{}) error {
+func (t *API) post(path string, payload interface{}, response interface{}, headers ...map[string]string) error {
 	url := t.EndPoint + path
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -42,6 +42,11 @@ func (t *API) post(path string, payload interface{}, response interface{}) error
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Set(k, v)
+		}
+	}
 
 	return t.do(req, response)
 }
@@ -68,7 +73,10 @@ func (t *API) do(req *http.Request, response interface{}) error {
 
 func (t *API) CheckLicence(payload *CheckLicencePayload) (*CheckLicenceResponse, error) {
 	var response CheckLicenceResponse
-	err := t.post("/licence/check", payload, &response)
+	headers := map[string]string{
+		"x-ktp": t.Token,
+	}
+	err := t.post("/licence/check", payload, &response, headers)
 	if err != nil {
 		return nil, fmt.Errorf("error while checking licence: %w", err)
 	}
