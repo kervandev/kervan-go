@@ -51,6 +51,21 @@ func (t *API) post(path string, payload interface{}, response interface{}, heade
 	return t.do(req, response)
 }
 
+func (t *API) get(path string, payload interface{}, response interface{}, headers ...map[string]string) error {
+	url := t.EndPoint + path
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Set(k, v)
+		}
+	}
+	return t.do(req, response)
+}
+
 func (t *API) do(req *http.Request, response interface{}) error {
 	req.Header.Set("Authorization", "Bearer "+t.Token)
 	client := &http.Client{
@@ -76,9 +91,21 @@ func (t *API) CheckLicence(payload *CheckLicencePayload) (*CheckLicenceResponse,
 	headers := map[string]string{
 		"x-ktp": t.Token,
 	}
-	err := t.post("/licence/check", payload, &response, headers)
+	err := t.post("/vlcs/licence/check", payload, &response, headers)
 	if err != nil {
 		return nil, fmt.Errorf("error while checking licence: %w", err)
+	}
+	return &response, nil
+}
+
+func (t *API) GetVersion() (*GetVersionResponse, error) {
+	var response GetVersionResponse
+	headers := map[string]string{
+		"x-ktp": t.Token,
+	}
+	err := t.get("/vlcs/version", nil, &response, headers)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting version: %w", err)
 	}
 	return &response, nil
 }
