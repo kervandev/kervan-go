@@ -9,6 +9,7 @@ import (
 
 type LicenceCheckJWT struct {
 	LicenceKey string            `json:"licence_key"`
+	IpAddress  string            `json:"ip_address"`
 	Data       map[string]string `json:"data"`
 	jwt.RegisteredClaims
 }
@@ -19,9 +20,10 @@ type LicenceCheckResponseJWT struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateLicenceCheckJWT(licenceKey string, data map[string]string, secret string) (string, error) {
+func GenerateLicenceCheckJWT(licenceKey, ip_address string, data map[string]string, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, LicenceCheckJWT{
 		LicenceKey: licenceKey,
+		IpAddress:  ip_address,
 		Data:       data,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience:  jwt.ClaimStrings{"kervan"},
