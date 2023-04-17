@@ -66,6 +66,10 @@ func (t *API) get(path string, payload interface{}, response interface{}, header
 	return t.do(req, response)
 }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 func (t *API) do(req *http.Request, response interface{}) error {
 	req.Header.Set("Authorization", "Bearer "+t.Token)
 	client := &http.Client{
@@ -80,6 +84,14 @@ func (t *API) do(req *http.Request, response interface{}) error {
 	decode := json.NewDecoder(bytes.NewReader(body))
 	decode.DisallowUnknownFields()
 	decode.UseNumber()
+	if resp.StatusCode != http.StatusOK {
+		var errorResponse ErrorResponse
+		if err := decode.Decode(&errorResponse); err != nil {
+			return err
+		}
+		return fmt.Errorf("error while calling api: %s", errorResponse.Error)
+	}
+
 	if err := decode.Decode(response); err != nil {
 		return err
 	}
@@ -103,8 +115,7 @@ func (t *API) GetVersion() (*GetVersionResponse, error) {
 	headers := map[string]string{
 		"x-ktp": t.Token,
 	}
-	err := t.get("/vlcs/version", nil, &response, headers)
-	if err != nil {
+	if err := t.get("/vlcs/version", nil, &response, headers); err != nil {
 		return nil, fmt.Errorf("error while getting version: %w", err)
 	}
 	return &response, nil
