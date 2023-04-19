@@ -107,6 +107,9 @@ func (t *API) CheckLicence(payload *CheckLicencePayload) (*CheckLicenceResponse,
 	if err != nil {
 		return nil, fmt.Errorf("error while checking licence: %w", err)
 	}
+	if response.Token == "" {
+		return nil, fmt.Errorf("error while checking licence: token is empty")
+	}
 	return &response, nil
 }
 
