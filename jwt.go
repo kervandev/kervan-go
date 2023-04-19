@@ -34,6 +34,12 @@ func GenerateLicenceCheckJWT(licenceKey, ip_address string, data map[string]stri
 }
 
 func ParseLicenceCheckResponseJWT(tokenString, secret string) (claims *LicenceCheckResponseJWT, err error) {
+	if tokenString == "" {
+		return nil, errors.New("tokenString is empty")
+	}
+	if secret == "" {
+		return nil, errors.New("secret is empty")
+	}
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&LicenceCheckResponseJWT{},
